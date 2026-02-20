@@ -7,7 +7,7 @@ from typing import List, Dict
 
 # Настройка API ключа
 # Рекомендуется использовать переменные окружения для безопасности
-API_KEY = os.getenv("GEMINI_API_KEY", "AIzaSyBKPIbrBUZdMmEi_sYA1sgkTJInsAB8dV8")
+API_KEY = os.getenv("GEMINI_API_KEY", "YOUR_API_KEY_HERE")
 genai.configure(api_key=API_KEY)
 
 def fetch_batch(batch_size: int = 10) -> List[Dict]:
