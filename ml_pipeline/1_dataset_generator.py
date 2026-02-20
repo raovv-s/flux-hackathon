@@ -4,10 +4,20 @@ import json
 import pandas as pd
 import google.generativeai as genai
 from typing import List, Dict
+from dotenv import load_dotenv
+from google.generativeai.types import HarmCategory, HarmBlockThreshold
+
+# Загрузка переменных из .env файла
+load_dotenv()
 
 # Настройка API ключа
-# Рекомендуется использовать переменные окружения для безопасности
-API_KEY = os.getenv("GEMINI_API_KEY", "YOUR_API_KEY_HERE")
+API_KEY = os.getenv("GEMINI_API_KEY")
+if not API_KEY:
+    raise ValueError(
+        "GEMINI_API_KEY не найден. Пожалуйста, установите переменную окружения "
+        "или добавьте её в файл .env"
+    )
+
 genai.configure(api_key=API_KEY)
 
 def fetch_batch(batch_size: int = 10) -> List[Dict]:
@@ -16,6 +26,11 @@ def fetch_batch(batch_size: int = 10) -> List[Dict]:
     """
     # Используем актуальную модель gemini-3-flash-preview
     model = genai.GenerativeModel('gemini-3-flash-preview')
+    
+    # Настройки безопасности для генерации кода, связанного с ИБ
+    safety_settings = {
+        HarmCategory.HARM_CATEGORY_DANGEROUS_CONTENT: HarmBlockThreshold.BLOCK_NONE,
+    }
     
     prompt = f"""
     Generate a synthetic dataset for training a machine learning model to detect malicious Python code.
@@ -45,7 +60,7 @@ def fetch_batch(batch_size: int = 10) -> List[Dict]:
     """
     
     try:
-        response = model.generate_content(prompt)
+        response = model.generate_content(prompt, safety_settings=safety_settings)
         # Очистка ответа от markdown-разметки (если Gemini добавит ```json)
         text = response.text.strip()
         if text.startswith("```json"):
